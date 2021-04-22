@@ -39,10 +39,6 @@ const Home = (props: HomeProps) => {
             });
     }, [props.todoActions]);
 
-    const handleChangeFilter = (value: any) => {
-        setFilter(value);
-    }
-
     const handleFilter = (item: HomeInterface) => {
         if (filter === 'completed') {
             return item.completed;
@@ -70,7 +66,7 @@ const Home = (props: HomeProps) => {
                             <Select
                                 value={filter}
                                 fullWidth={true}
-                                onChange={event => handleChangeFilter(event.target.value)}
+                                onChange={event => setFilter(String(event.target.value))}
                             >
                                 <MenuItem value={'all'}>All</MenuItem>
                                 <MenuItem value={'completed'}>Completed</MenuItem>
@@ -85,32 +81,33 @@ const Home = (props: HomeProps) => {
                             </Box>
                             :
                             <List>
-                                {props.todo.items.filter(handleFilter).map((value: HomeInterface, index: number) => (
-                                    <ListItem
-                                        key={index}
-                                        dense={true}
-                                        button={true}
-                                    >
-                                        <Checkbox
-                                            checked={value.completed}
-                                            tabIndex={-1}
-                                            disableRipple={true}
-                                        />
-                                        <ListItemText primary={value.title}/>
-                                        <ListItemSecondaryAction>
-                                            <IconButton
-                                                aria-label={'Edit'}
-                                            >
-                                                <Edit/>
-                                            </IconButton>
-                                            <IconButton
-                                                aria-label={'Delete'}
-                                            >
-                                                <Delete/>
-                                            </IconButton>
-                                        </ListItemSecondaryAction>
-                                    </ListItem>
-                                ))}
+                                {props.todo.items.filter(handleFilter)
+                                    .map((value: HomeInterface, index: number) => (
+                                        <ListItem
+                                            key={index}
+                                            dense={true}
+                                            button={true}
+                                        >
+                                            <Checkbox
+                                                checked={value.completed}
+                                                tabIndex={-1}
+                                                disableRipple={true}
+                                            />
+                                            <ListItemText primary={value.title}/>
+                                            <ListItemSecondaryAction>
+                                                <IconButton
+                                                    aria-label={'Edit'}
+                                                >
+                                                    <Edit/>
+                                                </IconButton>
+                                                <IconButton
+                                                    aria-label={'Delete'}
+                                                >
+                                                    <Delete/>
+                                                </IconButton>
+                                            </ListItemSecondaryAction>
+                                        </ListItem>
+                                    ))}
                             </List>
                         }
                     </Box>
