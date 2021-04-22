@@ -1,8 +1,9 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     Box,
     Button,
     Checkbox,
+    CircularProgress,
     FormControl,
     Grid,
     IconButton,
@@ -16,12 +17,46 @@ import {
     Typography
 } from '@material-ui/core';
 import {Add, Delete, Edit} from '@material-ui/icons';
-import './index.css';
+import {bindActionCreators} from 'redux';
+import {connect} from 'react-redux';
+import {actions as todoActions} from '../reducers/todo';
+import {HomeInterface, HomeProps} from '../interfaces/HomeInterface';
+import {getTodos} from '../fetch/todo';
 
-const Home = () => {
+const Home = (props: HomeProps) => {
+
+    const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState('all');
+
+    useEffect(() => {
+        getTodos()
+            .then((response: any) => {
+                props.todoActions.create(response.todoList);
+                setLoading(false);
+            })
+            .catch((error: any) => {
+                console.error(error);
+            });
+    }, [props.todoActions]);
+
+    const handleChangeFilter = (value: any) => {
+        setFilter(value);
+    }
+
+    const handleFilter = (item: HomeInterface) => {
+        if (filter === 'completed') {
+            return item.completed;
+        }
+        if (filter === 'active') {
+            return !item.completed;
+        }
+        return true;
+    }
+
+    console.log(props.todo);
 
     return (
-        <Grid item xs={12} sm={6} className="grid-todos">
+        <Grid item xs={12} sm={6}>
             <Typography variant={'h4'} align={'center'}>Todos</Typography>
             <Box p={2}>
                 <Paper>
@@ -31,11 +66,11 @@ const Home = () => {
                         </Button>
                     </Box>
                     <Box p={2}>
-                        <FormControl fullWidth>
+                        <FormControl fullWidth={true}>
                             <Select
-                                value={'all'}
-                                name={'filter'}
-                                fullWidth
+                                value={filter}
+                                fullWidth={true}
+                                onChange={event => handleChangeFilter(event.target.value)}
                             >
                                 <MenuItem value={'all'}>All</MenuItem>
                                 <MenuItem value={'completed'}>Completed</MenuItem>
@@ -44,34 +79,40 @@ const Home = () => {
                         </FormControl>
                     </Box>
                     <Box p={2}>
-                        <List>
-                            {[1, 2, 3, 4, 5].map((value: any, index) => (
-                                <ListItem
-                                    key={index}
-                                    dense
-                                    button
-                                >
-                                    <Checkbox
-                                        checked={value.completed}
-                                        tabIndex={-1}
-                                        disableRipple
-                                    />
-                                    <ListItemText primary={'Name todo'}/>
-                                    <ListItemSecondaryAction>
-                                        <IconButton
-                                            aria-label={'Edit'}
-                                        >
-                                            <Edit/>
-                                        </IconButton>
-                                        <IconButton
-                                            aria-label={'Delete'}
-                                        >
-                                            <Delete/>
-                                        </IconButton>
-                                    </ListItemSecondaryAction>
-                                </ListItem>
-                            ))}
-                        </List>
+                        {loading ?
+                            <Box display={'flex'} justifyContent={'center'}>
+                                <CircularProgress/>
+                            </Box>
+                            :
+                            <List>
+                                {props.todo.items.filter(handleFilter).map((value: HomeInterface, index: number) => (
+                                    <ListItem
+                                        key={index}
+                                        dense={true}
+                                        button={true}
+                                    >
+                                        <Checkbox
+                                            checked={value.completed}
+                                            tabIndex={-1}
+                                            disableRipple={true}
+                                        />
+                                        <ListItemText primary={value.title}/>
+                                        <ListItemSecondaryAction>
+                                            <IconButton
+                                                aria-label={'Edit'}
+                                            >
+                                                <Edit/>
+                                            </IconButton>
+                                            <IconButton
+                                                aria-label={'Delete'}
+                                            >
+                                                <Delete/>
+                                            </IconButton>
+                                        </ListItemSecondaryAction>
+                                    </ListItem>
+                                ))}
+                            </List>
+                        }
                     </Box>
                 </Paper>
             </Box>
@@ -79,4 +120,12 @@ const Home = () => {
     );
 }
 
-export default Home;
+const mapStateToProps = ({todo}: any) => ({
+    todo
+});
+
+const mapDispatchToProps = (dispatch: any) => ({
+    todoActions: bindActionCreators(todoActions, dispatch)
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Home);
