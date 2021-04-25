@@ -1,15 +1,4 @@
-export interface HomeProps {
-    todo: {
-        items: [{
-            id: string;
-            title: string;
-            completed: boolean;
-        }]
-    },
-    todoActions: any;
-}
-
-export interface HomeInterface {
+export default interface HomeInterface {
     id: string;
     title: string;
     completed: boolean;

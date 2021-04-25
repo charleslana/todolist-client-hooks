@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Box,
     Button,
@@ -16,14 +16,15 @@ import {
     Select,
     Typography
 } from '@material-ui/core';
-import {Add, Delete, Edit} from '@material-ui/icons';
-import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
-import {actions as todoActions} from '../reducers/todo';
-import {HomeInterface, HomeProps} from '../interfaces/HomeInterface';
-import {getTodos} from '../fetch/todo';
+import { Add, Delete, Edit } from '@material-ui/icons';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import { actions as todoActions } from '../reducers/todo';
+import { actions as toastActions } from '../reducers/toast';
+import HomeInterface from '../interfaces/HomeInterface';
+import { getTodos } from '../fetch/todo';
 
-const Home = (props: HomeProps) => {
+const Home = (props: any) => {
 
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
@@ -36,8 +37,12 @@ const Home = (props: HomeProps) => {
             })
             .catch((error: any) => {
                 console.error(error);
+                props.toastActions.open({
+                    type: 'error',
+                    message: error.message
+                });
             });
-    }, [props.todoActions]);
+    }, [props.todoActions, props.toastActions]);
 
     const handleFilter = (item: HomeInterface) => {
         if (filter === 'completed') {
@@ -49,6 +54,10 @@ const Home = (props: HomeProps) => {
         return true;
     }
 
+    const handleNew = () => {
+        props.history.push('/new');
+    }
+
     console.log(props.todo);
 
     return (
@@ -57,8 +66,12 @@ const Home = (props: HomeProps) => {
             <Box p={2}>
                 <Paper>
                     <Box p={2}>
-                        <Button variant={'contained'} color={'primary'}>
-                            <Add/> Add new todo
+                        <Button
+                            variant={'contained'}
+                            color={'primary'}
+                            onClick={handleNew}
+                        >
+                            <Add /> Add new todo
                         </Button>
                     </Box>
                     <Box p={2}>
@@ -77,7 +90,7 @@ const Home = (props: HomeProps) => {
                     <Box p={2}>
                         {loading ?
                             <Box display={'flex'} justifyContent={'center'}>
-                                <CircularProgress/>
+                                <CircularProgress />
                             </Box>
                             :
                             <List>
@@ -93,17 +106,17 @@ const Home = (props: HomeProps) => {
                                                 tabIndex={-1}
                                                 disableRipple={true}
                                             />
-                                            <ListItemText primary={value.title}/>
+                                            <ListItemText primary={value.title} />
                                             <ListItemSecondaryAction>
                                                 <IconButton
                                                     aria-label={'Edit'}
                                                 >
-                                                    <Edit/>
+                                                    <Edit />
                                                 </IconButton>
                                                 <IconButton
                                                     aria-label={'Delete'}
                                                 >
-                                                    <Delete/>
+                                                    <Delete />
                                                 </IconButton>
                                             </ListItemSecondaryAction>
                                         </ListItem>
@@ -117,12 +130,13 @@ const Home = (props: HomeProps) => {
     );
 }
 
-const mapStateToProps = ({todo}: any) => ({
+const mapStateToProps = ({ todo }: any) => ({
     todo
 });
 
 const mapDispatchToProps = (dispatch: any) => ({
-    todoActions: bindActionCreators(todoActions, dispatch)
+    todoActions: bindActionCreators(todoActions, dispatch),
+    toastActions: bindActionCreators(toastActions, dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Home);
